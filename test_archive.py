@@ -68,6 +68,13 @@ class ArchiveTests(unittest.TestCase):
                     self.assertTrue((ROOT/folder/filename).is_file())
                     self.assertIn('href="../index.html"',(ROOT/folder/filename).read_text(encoding='utf8'))
 
+    def test_archive_header_has_no_logo(self):
+        for page in [ROOT/'index.html']+[ROOT/(s['slug']+'.html') for s in SUBJECTS]:
+            with self.subTest(page=page.name):
+                text=page.read_text(encoding='utf8')
+                self.assertNotIn('class="mark"',text)
+                self.assertIn('Half-Yearly <small>Kamrup · 2026</small>',text)
+
     def test_assamese_mil_exam_is_finished_without_invented_materials(self):
         page=(ROOT/'assamese.html').read_text(encoding='utf8')
         self.assertIn('Exam finished',page)
