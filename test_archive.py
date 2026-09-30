@@ -101,6 +101,30 @@ class ArchiveTests(unittest.TestCase):
             with self.subTest(href=href):
                 self.assertTrue((ROOT/href.split('#')[0]).is_file())
 
+    def test_answer_math_is_prerendered_with_local_fonts(self):
+        from html.parser import HTMLParser
+        class MathProbe(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.in_answer=False; self.answers=[]; self.depth=0
+            def handle_starttag(self,tag,attrs):
+                if tag=='div' and ('class','answer') in attrs:
+                    self.in_answer=True; self.depth=1; self.answers.append(0)
+                elif self.in_answer:
+                    if tag=='div': self.depth+=1
+                    if tag=='math': self.answers[-1]+=1
+            def handle_endtag(self,tag):
+                if self.in_answer and tag=='div':
+                    self.depth-=1
+                    if not self.depth:self.in_answer=False
+        page=(ROOT/'physics-paper-2026.html').read_text(encoding='utf8')
+        probe=MathProbe();probe.feed(page)
+        self.assertGreaterEqual(sum(probe.answers),60)
+        self.assertEqual(len(probe.answers),33)
+        self.assertIn('physics/katex-fonts.css',page)
+        self.assertIn('physics/katex.min.css',page)
+        self.assertTrue((ROOT/'physics/katex.min.css').is_file())
+        self.assertIn('class="katex"',page)
+
     def test_paper_transcription_matches_source_pages_and_solutions(self):
         import pymupdf
         from build_physics_paper import SOURCE, Q1, Q2, Q3, Q4
@@ -113,6 +137,14 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('Or /',doc[7].get_text())
         self.assertIn('wheatstone bridge',doc[3].get_text().lower())
         self.assertIn('4 × 10−3',doc[6].get_text())
+
+    def test_math_source_covers_every_complex_answer(self):
+        import json
+        math=json.loads((ROOT/'paper-math.json').read_text(encoding='utf8'))
+        for q in ('q2g','q3a','q3a-or','q3b-or','q3c','q3c-or','q3d-or','q3e','q3f','q4a','q4a-or','q4b-or','q4c','q4c-or'):
+            with self.subTest(question=q):self.assertTrue(math.get(q))
+        self.assertIn('\\frac{V(R_2+R_3)}',math['q4c-or'][-1])
+        self.assertIn('\\tfrac{40}3',math['q4c'][1])
 
     def test_archive_header_has_no_logo(self):
         for page in [ROOT/'index.html']+[ROOT/(s['slug']+'.html') for s in SUBJECTS]:

@@ -2,6 +2,9 @@
 from html import escape
 from pathlib import Path
 import shutil
+import json
+import subprocess
+import os
 import pymupdf
 from build import ROOT, layout
 
@@ -10,6 +13,17 @@ PAPER = ROOT / 'physics-paper-2026.pdf'
 assert SOURCE.is_file()
 assert len(pymupdf.open(SOURCE)) == 8
 shutil.copyfile(SOURCE, PAPER)
+
+KATEX_DIST = ROOT.parent / 'asseb-half-yearly-study-plan-2026' / 'node_modules' / 'katex' / 'dist'
+assert (KATEX_DIST/'katex.min.css').is_file(), 'Run npm ci in the original Physics repo first'
+shutil.copyfile(KATEX_DIST/'katex.min.css', ROOT/'physics'/'katex.min.css')
+RENDERED_MATH = json.loads(subprocess.run(
+    ['node','render_paper_math.js'], cwd=ROOT, check=True, capture_output=True, text=True,
+    encoding='utf8', env=os.environ.copy()
+).stdout)
+
+def math_for(qid):
+    return ''.join('<div class="math-row">'+equation+'</div>' for equation in RENDERED_MATH.get(qid,[]))
 
 Q1 = [
  ('a','The SI unit of electric potential is — (i) Volt (ii) Coulomb (iii) Joule (iv) Newton.','(i) Volt. Potential is work per unit charge: 1 V = 1 J/C.','1'),
@@ -50,8 +64,8 @@ def item(qid, question, answer, page, alternative=None, fig=None, altfig=None):
     if alternative:
         aq, aa = alternative
         figure = '<figure><img src="diagrams/'+altfig+'" alt="'+escape(altfig.replace('-',' '))+'"><figcaption>Reconstructed explanatory diagram from the PDF’s text.</figcaption></figure>' if altfig else ''
-        alternate = '<div class="option" id="'+qid+'-or"><div class="option-tag">OR alternative</div><p class="question">'+aq+'</p>'+figure+'<div class="answer"><strong>Worked answer</strong><p>'+aa+'</p></div></div>'
-    return '<article class="paper-item" id="'+qid+'"><div class="item-head"><strong>'+qid.upper()+'</strong><span>PDF p. '+page+'</span></div><p class="question">'+question+'</p>'+graphic+'<div class="answer"><strong>Worked answer</strong><p>'+answer+'</p></div>'+alternate+'</article>'
+        alternate = '<div class="option" id="'+qid+'-or"><div class="option-tag">OR alternative</div><p class="question">'+aq+'</p>'+figure+'<div class="answer"><strong>Worked answer</strong><p>'+aa+'</p>'+math_for(qid+'-or')+'</div></div>'
+    return '<article class="paper-item" id="'+qid+'"><div class="item-head"><strong>'+qid.upper()+'</strong><span>PDF p. '+page+'</span></div><p class="question">'+question+'</p>'+graphic+'<div class="answer"><strong>Worked answer</strong><p>'+answer+'</p>'+math_for(qid)+'</div>'+alternate+'</article>'
 
 q1 = ''.join(item('q1'+a,q,ans,p) for a,q,ans,p in Q1)
 q2 = ''.join(item('q2'+a,q,ans,p) for a,q,ans,p in Q2)
@@ -66,5 +80,5 @@ content = '''<div class="crumb"><a href="index.html">All subjects</a> / <a href=
 <section class="paper-group" id="group3"><p class="eyebrow">Q3 · 3 × 6 = 18</p><h2>Six parts · choose one option per part</h2>'''+q3+'''</section>
 <section class="paper-group" id="group4"><p class="eyebrow">Q4 · 5 × 2 = 10</p><h2>Choose any two of three</h2><p>Each part also has an OR option. The resistor network proof on PDF p. 8 is the OR for Q4(c), <strong>not</strong> a fifth question.</p>'''+q4+'''</section>
 <section class="paper-group" id="analysis"><p class="eyebrow">After the exam</p><h2>Paper analysis</h2><div class="analysis-box"><p><strong>Structure:</strong> 6 + 16 + 18 + 10 = 50 marks. Q2 offers one question beyond the eight required; Q3 has six parts with internal OR choices; Q4 asks for two of three, with internal OR choices.</p><p><strong>Coverage:</strong> Electrostatics (charges, potential, Gauss), current electricity, magnetic effects and magnetism, and electromagnetic induction all appear. Q4(c) mixes circuit alternatives: a four-capacitor network or a resistor-network proof.</p><p><strong>Connection to preparation:</strong> The six-chapter Physics guide covers the concepts tested here. This paper particularly rewards short textbook definitions, unit recall, Gaussian-surface steps, magnetic-field derivations and Faraday/Lenz explanations. Without your actual answers or a question-by-question comparison to what you studied, we cannot honestly score the guide’s predictive accuracy or your performance.</p><p><strong>Skills tested:</strong> Direct definitions and units, symmetry-based derivations, circuit diagrams, numerical substitution and the energy explanation of Lenz’s law. This is a content analysis, not a grade or prediction of your score.</p><p><strong>Important distinctions:</strong> The capacitor network has four capacitors (not three); Q3(c)’s circular-coil calculation is its OR option; Q4(c)’s resistor network is an OR. The 250-turn flux question assumes the listed flux is per turn. Q3(c)’s coil calculation assumes one turn because no turn count is stated.</p><p><strong>What we cannot score:</strong> Your selected OR options and written responses haven’t been supplied. Do not treat this as an official mark scheme; an examiner may accept other correct wording or methods.</p></div></section><a class="back" href="physics.html">← Back to Physics</a>'''
-(ROOT/'physics-paper-2026.html').write_text(layout('Physics paper and answers',content,'physics').replace('</head>','<link rel="stylesheet" href="paper.css"></head>',1),encoding='utf8')
+(ROOT/'physics-paper-2026.html').write_text(layout('Physics paper and answers',content,'physics').replace('</head>','<link rel="stylesheet" href="physics/katex.min.css"><link rel="stylesheet" href="physics/katex-fonts.css"><link rel="stylesheet" href="paper.css"></head>',1),encoding='utf8')
 print('paper built:',len(Q1),len(Q2),len(Q3),len(Q4),'question parts, with OR options')
