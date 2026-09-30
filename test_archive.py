@@ -68,6 +68,52 @@ class ArchiveTests(unittest.TestCase):
                     self.assertTrue((ROOT/folder/filename).is_file())
                     self.assertIn('href="../index.html"',(ROOT/folder/filename).read_text(encoding='utf8'))
 
+    def test_physics_paper_has_all_questions_or_options_and_diagrams(self):
+        page=(ROOT/'physics-paper-2026.html').read_text(encoding='utf8')
+        for q,n in [(1,6),(2,9),(3,6),(4,3)]:
+            for letter in 'abcdefghi'[:n]:
+                with self.subTest(question=f'{q}{letter}'):
+                    self.assertIn(f'id="q{q}{letter}"',page)
+        for q in ['q3a','q3b','q3c','q3d','q3e','q3f','q4a','q4b','q4c']:
+            self.assertIn(f'id="{q}-or"',page)
+        for graphic in ('wheatstone.svg','shell-field.svg','capacitor-network.svg','resistor-network.svg'):
+            self.assertIn('diagrams/'+graphic,page)
+            self.assertTrue((ROOT/'diagrams'/graphic).is_file())
+        self.assertIn('8 pages',page)
+        self.assertIn('The original PDF uses diagram placeholders',page)
+        self.assertIn('Paper analysis',page)
+        self.assertIn('2.5 × 10',page)
+        self.assertIn('40/3',page)
+        self.assertIn('120 V',page)
+        self.assertIn('18 J',page)
+        self.assertIn('750 V',page)
+        self.assertIn('Do not treat this as an official mark scheme',page)
+        self.assertIn('physics-paper-2026.html',(ROOT/'physics.html').read_text(encoding='utf8'))
+        self.assertIn('The Physics paper and worked review are now available',(ROOT/'index.html').read_text(encoding='utf8'))
+
+    def test_every_physics_paper_page_has_existing_local_assets(self):
+        import re
+        page=ROOT/'physics-paper-2026.html'
+        parser=Links(); parser.feed(page.read_text(encoding='utf8'))
+        refs=parser.links + re.findall(r'(?:src|href)=["\']([^"\']+)',page.read_text(encoding='utf8'))
+        for href in refs:
+            if href.startswith(('http:','https:','#','mailto:','data:')): continue
+            with self.subTest(href=href):
+                self.assertTrue((ROOT/href.split('#')[0]).is_file())
+
+    def test_paper_transcription_matches_source_pages_and_solutions(self):
+        import pymupdf
+        from build_physics_paper import SOURCE, Q1, Q2, Q3, Q4
+        doc=pymupdf.open(SOURCE)
+        self.assertEqual(len(doc),8)
+        self.assertEqual([len(g) for g in (Q1,Q2,Q3,Q4)],[6,9,6,3])
+        self.assertEqual(sum(alt is not None for *_,alt in Q3+Q4),9)
+        self.assertIn('DIAGRAM PLACEHOLDER',doc[6].get_text())
+        self.assertIn('DIAGRAM PLACEHOLDER',doc[7].get_text())
+        self.assertIn('Or /',doc[7].get_text())
+        self.assertIn('wheatstone bridge',doc[3].get_text().lower())
+        self.assertIn('4 × 10−3',doc[6].get_text())
+
     def test_archive_header_has_no_logo(self):
         for page in [ROOT/'index.html']+[ROOT/(s['slug']+'.html') for s in SUBJECTS]:
             with self.subTest(page=page.name):
@@ -97,7 +143,8 @@ class ArchiveTests(unittest.TestCase):
 
     def test_paper_pending_and_alternative_paper_real_route(self):
         p=(ROOT/'physics.html').read_text(encoding='utf8')
-        self.assertIn('The actual Physics paper will be added',p)
+        self.assertIn('Paper and worked review available',p)
+        self.assertIn('physics-paper-2026.html',p)
         self.assertIn('alte/question-paper.html',(ROOT/'alternative-english.html').read_text(encoding='utf8'))
         self.assertTrue((ROOT/'alte/question-paper.html').is_file())
 
