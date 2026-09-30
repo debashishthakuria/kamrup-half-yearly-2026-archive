@@ -146,6 +146,18 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('\\frac{V(R_2+R_3)}',math['q4c-or'][-1])
         self.assertIn('\\tfrac{40}3',math['q4c'][1])
 
+    def test_caution_and_credit_on_every_html_page(self):
+        from site_copy import CAUTION, CREDIT
+        pages=list(ROOT.glob('*.html'))+list((ROOT/'physics').glob('*.html'))+list((ROOT/'alte').glob('*.html'))
+        self.assertEqual(len(pages),35)
+        for page in pages:
+            with self.subTest(page=str(page.relative_to(ROOT))):
+                text=page.read_text(encoding='utf8')
+                self.assertEqual(text.count(CAUTION),1)
+                self.assertEqual(text.count(CREDIT),1)
+                self.assertLess(text.index(CAUTION),text.index('<main') if '<main' in text else text.index('<h1'))
+                self.assertGreater(text.index(CREDIT),text.index(CAUTION))
+
     def test_archive_header_has_no_logo(self):
         for page in [ROOT/'index.html']+[ROOT/(s['slug']+'.html') for s in SUBJECTS]:
             with self.subTest(page=page.name):

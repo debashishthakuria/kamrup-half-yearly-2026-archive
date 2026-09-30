@@ -1,6 +1,7 @@
 """Generate the 2026 Kamrup half-yearly subject archive."""
 from pathlib import Path
 from html import escape
+from site_copy import CAUTION, CREDIT
 
 ROOT = Path(__file__).resolve().parent
 BASE = 'https://debashishthakuria.github.io/'
@@ -44,7 +45,7 @@ def nav(current=''):
     return '<nav class="subject-nav" aria-label="Subject tabs">'+items+'</nav>'
 
 def layout(title, content, current=''):
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f3ed"><meta name="description" content="Kamrup district half-yearly exam subject archive, study resources and post-exam reviews."><title>'+escape(title)+' · Kamrup Half-Yearly 2026</title><link rel="stylesheet" href="style.css"></head><body><header class="site-head"><div class="wrap head-row"><a class="logo" href="index.html"><span>Half-Yearly <small>Kamrup · 2026</small></span></a><span class="head-meta">HS second year / subject archive</span></div></header><div class="wrap">'+nav(current)+'<main>'+content+'</main><footer><span>Kamrup district · HS second year · 2026</span><span>Revision materials are unofficial. Paper analysis follows the actual paper when available.</span></footer></div></body></html>'
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f3ed"><meta name="description" content="Kamrup district half-yearly exam subject archive, study resources and post-exam reviews."><title>'+escape(title)+' · Kamrup Half-Yearly 2026</title><link rel="stylesheet" href="style.css"></head><body><header class="site-head"><div class="wrap head-row"><a class="logo" href="index.html"><span>Half-Yearly <small>Kamrup · 2026</small></span></a><span class="head-meta">HS second year / subject archive</span></div></header><div class="wrap"><aside class="site-caution" role="note"><strong>Please note:</strong> '+escape(CAUTION)+'</aside>'+nav(current)+'<main>'+content+'</main><footer><span>Kamrup district · HS second year · 2026</span><span>Revision materials are unofficial. Paper analysis follows the actual paper when available.</span><span class="site-credit">'+escape(CREDIT)+'</span></footer></div></body></html>'
 
 def status(s):
     return '<div class="badges"><span class="badge '+s['phase']+'">'+PHASES[s['phase']]+'</span><span class="badge '+s['material']+'">'+LABELS[s['material']]+'</span></div>'
