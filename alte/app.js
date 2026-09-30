@@ -1,0 +1,1 @@
+document.querySelectorAll('[data-done]').forEach(x=>{x.checked=localStorage.getItem('alte-'+x.dataset.done)==='1';x.addEventListener('change',()=>localStorage.setItem('alte-'+x.dataset.done,x.checked?'1':'0'))});
