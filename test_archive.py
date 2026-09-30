@@ -34,6 +34,25 @@ class ArchiveTests(unittest.TestCase):
                 for href in parser.links:
                     if '://' not in href and not href.startswith('#'):
                         self.assertTrue((ROOT/href.split('#')[0]).is_file(),(page.name,href))
+    def test_general_studies_chapters_are_extracted_from_existing_site(self):
+        page=(ROOT/'general-studies.html').read_text(encoding='utf8')
+        source='https://debashishthakuria.github.io/gshy/'
+        for anchor,title in [
+            ('ch1','Our Northeast, Our Neighbourhood'),
+            ('ch2','Inculcation of Scientific Temper'),
+            ('ch3','Cultural Heritage'),
+            ('ch4','Importance of CCA'),
+            ('ch5','Indian Knowledge System'),
+            ('rapid','Rapid Revision'),
+            ('plan','Exam Plan'),
+        ]:
+            with self.subTest(anchor=anchor):
+                self.assertIn(title,page)
+                self.assertIn(source+'#'+anchor,page)
+        self.assertIn(source+'#overview',page)
+        self.assertIn('The General Studies paper has not been shared',page)
+        self.assertNotIn('suggested answers',page.lower())
+
     def test_paper_pending_and_alternative_paper_real_route(self):
         p=(ROOT/'physics.html').read_text(encoding='utf8')
         self.assertIn('The actual Physics paper will be added',p)

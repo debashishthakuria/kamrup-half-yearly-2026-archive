@@ -20,7 +20,14 @@ SUBJECTS = [
     dict(slug='biology', name='Biology', group='Elective', phase='upcoming', material='soon'),
     dict(slug='computer-science', name='Computer Science', group='Elective', phase='upcoming', material='soon'),
     dict(slug='general-studies', name='General Studies', group='Compulsory', phase='finished', material='available', links=[
-        ('Open the General Studies revision notes', BASE+'gshy/'),
+        ('Open the full General Studies study book', BASE+'gshy/#overview'),
+        ('Chapter 1 · Our Northeast, Our Neighbourhood', BASE+'gshy/#ch1'),
+        ('Chapter 2 · Inculcation of Scientific Temper', BASE+'gshy/#ch2'),
+        ('Chapter 3 · Cultural Heritage', BASE+'gshy/#ch3'),
+        ('Chapter 4 · Importance of CCA', BASE+'gshy/#ch4'),
+        ('Chapter 5 · Indian Knowledge System', BASE+'gshy/#ch5'),
+        ('Rapid Revision', BASE+'gshy/#rapid'),
+        ('Exam Plan', BASE+'gshy/#plan'),
     ]),
 ]
 
@@ -60,7 +67,7 @@ for s in SUBJECTS:
     if s['material']=='available':
         content += '<section class="resource-block"><p class="eyebrow">Resources</p><h2>What’s available</h2><div class="resource-list">'+''.join('<a href="'+escape(url,quote=True)+'" target="_blank" rel="noopener noreferrer"><span>'+escape(label)+'</span><span aria-hidden="true">↗</span></a>' for label,url in s['links'])+'</div></section>'
         if s['slug']=='physics': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper and analysis pending.</h2><p>The revision guide is live. The actual Physics paper will be added and analysed after it is shared; no questions or results have been inferred.</p></section>'
-        elif s['slug']=='general-studies': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Not published yet.</h2><p>General Studies preparation is available; a question-paper review has not been added here.</p></section>'
+        elif s['slug']=='general-studies': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper and analysis pending.</h2><p>The General Studies paper has not been shared yet. When it arrives, the questions and post-exam review can be added here; the linked study book is preparation material, not a paper analysis.</p></section>'
         else: content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper review available.</h2><p>The linked Alternative English site includes the supplied paper, suggested answers and a guide audit. It is unofficial.</p></section>'
     else:
         heading = 'Coming Soon' if s['material']=='soon' else 'Working on it'
