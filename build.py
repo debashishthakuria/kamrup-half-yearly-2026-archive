@@ -13,7 +13,7 @@ SUBJECTS = [
         ('Read the post-exam guide audit', 'alte/paper-report.html'),
     ]),
     dict(slug='assamese', name='Assamese', group='MIL', phase='finished', material='working'),
-    dict(slug='mathematics', name='Mathematics', group='Elective', phase='upcoming', material='soon'),
+    dict(slug='mathematics', name='Mathematics', group='Elective', phase='finished', material='working'),
     dict(slug='physics', name='Physics', group='Elective', phase='finished', material='available', links=[
         ('Read the actual paper, worked answers and analysis', 'physics-paper-2026.html'),
         ('Download the supplied eight-page question paper', 'physics-paper-2026.pdf'),
@@ -60,10 +60,15 @@ def card(s):
     if s['slug']=='physics': description='The supplied paper, worked answers and analysis are ready alongside the revision guide.'
     if s['slug']=='general-studies': description='Preparation notes are available. A post-exam analysis is not published here yet.'
     if s['slug']=='assamese': description='The Assamese MIL exam is finished. Preparation and post-exam review are still being prepared.'
+    if s['slug']=='mathematics': description='The Mathematics exam is finished. No paper or post-exam review has been published here yet.'
     if s['slug']=='computer-science': description='The supplied paper, suggested solutions and both versions of the study guide are available.'
     return '<a class="subject-card" href="'+s['slug']+'.html"><span class="overline">'+escape(s['group'])+'</span><h3>'+escape(s['name'])+' <span aria-hidden="true">↗</span></h3>'+status(s)+'<p>'+escape(description)+'</p></a>'
 
-home = '<section class="hero"><p class="eyebrow">A subject-by-subject record · 2026</p><h1>One place for the<br><em>half-yearly record.</em></h1><p class="lead">Preparation, papers and post-exam reviews for the Kamrup district HS second-year half-yearly exams. We’ll add each paper only when it is available.</p><div class="hero-stats"><span><strong>7</strong> papers reported finished</span><span><strong>2</strong> exams still ahead</span><span><strong>4</strong> subjects with study materials</span></div></section>'
+# Derive totals from the subject records so the overview cannot drift out of sync.
+finished = sum(s['phase']=='finished' for s in SUBJECTS)
+upcoming = sum(s['phase']=='upcoming' for s in SUBJECTS)
+available = sum(s['material']=='available' for s in SUBJECTS)
+home = '<section class="hero"><p class="eyebrow">A subject-by-subject record · 2026</p><h1>One place for the<br><em>half-yearly record.</em></h1><p class="lead">Preparation, papers and post-exam reviews for the Kamrup district HS second-year half-yearly exams. We’ll add each paper only when it is available.</p><div class="hero-stats"><span><strong>'+str(finished)+'</strong> papers reported finished</span><span><strong>'+str(upcoming)+'</strong> exam'+('s' if upcoming!=1 else '')+' still ahead</span><span><strong>'+str(available)+'</strong> subjects with study materials</span></div></section>'
 home += '<section class="intro"><div><p class="eyebrow">Browse the archive</p><h2>Subjects, without the noise.</h2></div><p>Two statuses appear on each subject: whether the exam has happened, and whether materials are published. “Working on it” means the exam may be finished but the archive is not ready.</p></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">01 / 04</span><h2>Languages</h2><p>English and the two MIL options.</p></div><div class="card-grid">'+''.join(card(s) for s in SUBJECTS if s['group'] in ('Language','MIL'))+'</div></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">02 / 04</span><h2>Main electives</h2><p>Mathematics, Physics, Chemistry and Biology.</p></div><div class="card-grid">'+''.join(card(s) for s in SUBJECTS if s['group']=='Elective' and s['slug']!='computer-science')+'</div></section>'
@@ -85,6 +90,7 @@ for s in SUBJECTS:
         heading = 'Coming Soon' if s['material']=='soon' else 'Working on it'
         text = 'The exam is still ahead. This page will hold its preparation and, later, the actual paper and review.' if s['material']=='soon' else 'The exam is finished, but preparation materials and post-exam analytics have not been published for this subject.'
         if s['slug']=='assamese': text='The Assamese MIL exam is finished. Preparation materials and post-exam analytics have not been published for this subject yet; no paper or analysis is shown.'
+        if s['slug']=='mathematics': text='The Mathematics exam has been held (1 October). The question paper and post-exam review have not been supplied or published here yet. The existing study-plan site still has the pre-exam chapter outline; this archive does not present it as a paper review.'
         content += '<section class="empty-block"><div class="empty-symbol" aria-hidden="true">'+('↗' if s['material']=='soon' else '…')+'</div><h2>'+heading+'</h2><p>'+text+'</p></section>'
     content += '<a class="back" href="index.html">← Back to all subjects</a>'
     (ROOT/(s['slug']+'.html')).write_text(layout(s['name'],content,s['slug']),encoding='utf8')
