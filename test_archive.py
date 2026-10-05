@@ -14,8 +14,8 @@ class Links(HTMLParser):
 class ArchiveTests(unittest.TestCase):
     def test_each_subject_has_own_page_and_correct_status(self):
         self.assertEqual(len(SUBJECTS),9)
-        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),7)
-        self.assertEqual(sum(s['phase']=='upcoming' for s in SUBJECTS),2)
+        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),8)
+        self.assertEqual(sum(s['phase']=='upcoming' for s in SUBJECTS),1)
         for s in SUBJECTS:
             with self.subTest(s=s['slug']):
                 page=(ROOT/(s['slug']+'.html')).read_text(encoding='utf8')
@@ -89,7 +89,7 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('750 V',page)
         self.assertIn('Do not treat this as an official mark scheme',page)
         self.assertIn('physics-paper-2026.html',(ROOT/'physics.html').read_text(encoding='utf8'))
-        self.assertIn('Physics and Computer Science papers and worked reviews are available',(ROOT/'index.html').read_text(encoding='utf8'))
+        self.assertIn('English, Physics and Computer Science papers and suggested answers are available',(ROOT/'index.html').read_text(encoding='utf8'))
 
     def test_every_physics_paper_page_has_existing_local_assets(self):
         import re
@@ -152,7 +152,7 @@ class ArchiveTests(unittest.TestCase):
     def test_caution_and_credit_on_every_html_page(self):
         from site_copy import CAUTION, CREDIT
         pages=list(ROOT.glob('*.html'))+list((ROOT/'physics').glob('*.html'))+list((ROOT/'alte').glob('*.html'))+list((ROOT/'computer-science').glob('*.html'))
-        self.assertEqual(len(pages),38)
+        self.assertEqual(len(pages),39)
         for page in pages:
             with self.subTest(page=str(page.relative_to(ROOT))):
                 text=page.read_text(encoding='utf8')
@@ -173,7 +173,7 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('Exam finished',page)
         self.assertIn('<h2>Working on it</h2>',page)
         self.assertNotIn('Exam status not confirmed',page)
-        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),7)
+        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),8)
 
     def test_all_mirrored_local_links_and_assets_exist(self):
         import re
@@ -221,8 +221,43 @@ class ArchiveTests(unittest.TestCase):
             source=(ROOT.parent/'Documents/computer-exam-study-site'/route).read_text(encoding='utf8')
             self.assertIn(source.split('<body>',1)[1].split('</body>',1)[0],copy)
         home=(ROOT/'index.html').read_text(encoding='utf8')
-        self.assertIn('<strong>7</strong> papers reported finished',home)
-        self.assertIn('<strong>2</strong> exams still ahead',home)
-        self.assertIn('<strong>4</strong> subjects with study materials',home)
+        self.assertIn('<strong>8</strong> papers reported finished',home)
+        self.assertIn('<strong>1</strong> exam still ahead',home)
+        self.assertIn('<strong>5</strong> subjects with study materials',home)
+
+    def test_english_paper_every_option_and_source(self):
+        from build_english_paper import (SOURCE, PASSAGE, Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10I,Q10II,Q11,Q12)
+        import pymupdf
+        self.assertEqual(len(pymupdf.open(SOURCE)),5)
+        self.assertEqual(len(pymupdf.open(ROOT/'english-paper-2026.pdf')),5)
+        groups={1:Q1,2:Q2,3:Q3,4:Q4,5:Q5,6:Q6,7:Q7,8:Q8,9:Q9,11:Q11,12:Q12}
+        self.assertEqual([len(x) for x in (Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10I,Q10II,Q11,Q12)],
+                         [5,2,2,5,5,5,2,7,6,3,4,4,3])
+        page=(ROOT/'english-paper-2026.html').read_text(encoding='utf8')
+        source_text=' '.join(x.get_text() for x in pymupdf.open(SOURCE))
+        self.assertIn('The next time you take printouts unnecessarily',source_text)
+        self.assertIn('The next time you take printouts unnecessarily',page)
+        for n,rows in groups.items():
+            for letter,question,answer in rows:
+                with self.subTest(question=f'{n}{letter}'):
+                    self.assertIn(f'id="q{n}{letter}"',page)
+                    self.assertIn(question,page)
+                    self.assertTrue(answer)
+        for prefix,rows in [('10i',Q10I),('10ii',Q10II)]:
+            for letter,question,answer in rows:
+                with self.subTest(question=f'{prefix}{letter}'):
+                    self.assertIn(f'id="q{prefix}{letter}"',page)
+                    self.assertIn(question,page)
+                    self.assertTrue(answer)
+        self.assertEqual(page.count('class="eng-answer"'),53)
+        self.assertIn('not an official marking scheme',page)
+        subject=(ROOT/'english.html').read_text(encoding='utf8')
+        self.assertIn('Exam finished',subject)
+        self.assertIn('Materials available',subject)
+        for path in ('english-paper-2026.html','english-paper-2026.pdf'):
+            self.assertIn(f'href="{path}"',subject)
+            self.assertTrue((ROOT/path).is_file())
+        home=(ROOT/'index.html').read_text(encoding='utf8')
+        self.assertIn('<strong>5</strong> subjects with study materials',home)
 
 if __name__=='__main__': unittest.main()
