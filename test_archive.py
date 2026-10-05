@@ -152,7 +152,7 @@ class ArchiveTests(unittest.TestCase):
     def test_caution_and_credit_on_every_html_page(self):
         from site_copy import CAUTION, CREDIT
         pages=list(ROOT.glob('*.html'))+list((ROOT/'physics').glob('*.html'))+list((ROOT/'alte').glob('*.html'))+list((ROOT/'computer-science').glob('*.html'))
-        self.assertEqual(len(pages),39)
+        self.assertEqual(len(pages),40)
         for page in pages:
             with self.subTest(page=str(page.relative_to(ROOT))):
                 text=page.read_text(encoding='utf8')
@@ -236,7 +236,7 @@ class ArchiveTests(unittest.TestCase):
         page=(ROOT/'english-paper-2026.html').read_text(encoding='utf8')
         source_text=' '.join(x.get_text() for x in pymupdf.open(SOURCE))
         self.assertIn('The next time you take printouts unnecessarily',source_text)
-        self.assertIn('The next time you take printouts unnecessarily',page)
+        self.assertIn('Read the passage in the supplied PDF, page 2',page)
         for n,rows in groups.items():
             for letter,question,answer in rows:
                 with self.subTest(question=f'{n}{letter}'):
@@ -254,10 +254,35 @@ class ArchiveTests(unittest.TestCase):
         subject=(ROOT/'english.html').read_text(encoding='utf8')
         self.assertIn('Exam finished',subject)
         self.assertIn('Materials available',subject)
-        for path in ('english-paper-2026.html','english-paper-2026.pdf'):
+        for path in ('english-paper-2026.html','english-paper-2026.pdf','english-preparation.html'):
             self.assertIn(f'href="{path}"',subject)
             self.assertTrue((ROOT/path).is_file())
         home=(ROOT/'index.html').read_text(encoding='utf8')
         self.assertIn('<strong>5</strong> subjects with study materials',home)
+
+    def test_english_preparation_covers_supplied_scope(self):
+        from build_english_prep import CHAPTERS, GRAMMAR, WRITING
+        page=(ROOT/'english-preparation.html').read_text(encoding='utf8')
+        self.assertEqual(len(CHAPTERS),9)
+        self.assertEqual(len(GRAMMAR),5)
+        self.assertEqual(len(WRITING),4)
+        for slug,title,book,start,end,author,summary,questions in CHAPTERS:
+            with self.subTest(chapter=slug):
+                self.assertIn(f'id="{slug}"',page)
+                self.assertIn(title,page)
+                self.assertIn(f'supplied textbook PDF pp. {start}–{end}',page)
+                self.assertGreaterEqual(len(questions),4)
+        for slug,title,rule,questions in GRAMMAR:
+            with self.subTest(grammar=slug):
+                self.assertIn(f'id="{slug}"',page)
+                self.assertGreaterEqual(len(questions),4)
+        for slug,title,rule,question,model in WRITING:
+            with self.subTest(writing=slug):
+                self.assertIn(f'id="{slug}"',page)
+                self.assertIn(question,page)
+        self.assertIn('retrospective practice, not a pre-exam prediction',page)
+        self.assertIn('id="paper-analysis"',(ROOT/'english-paper-2026.html').read_text(encoding='utf8'))
+        self.assertNotIn('href="Flamingo_XII_Flamingo-Single.pdf"',page)
+        self.assertNotIn('href="Vistas_XII_all-pages.pdf"',page)
 
 if __name__=='__main__': unittest.main()
