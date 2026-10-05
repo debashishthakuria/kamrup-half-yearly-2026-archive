@@ -47,7 +47,7 @@ Q6 = [
 ]
 Q7 = [
  ('a','My friend told me that he was very thirsty and requested me to give him a glass of water.','My friend said to me, “I am very thirsty. Please give me a glass of water.” The exact direct-speech wording may vary while preserving the meaning.'),
- ('b','One day Mukesh said to me, “I will be a motor mechanic and leave Firozabad.” I said to him, “Do you know anything about car?”','One day Mukesh told me that he would be a motor mechanic and leave Firozabad. I asked him whether he knew anything about cars. The source says “car” in the direct quote; “cars” in the indirect version is a grammatical adjustment.'),
+ ('b','One day Mukesh said to me, “I will be a motor mechanic and leave Firozabad.” I said to him, “Do you know anything about car?”','One day Mukesh told me that he would be a motor mechanic and leave Firozabad. I asked him whether he knew anything about cars. The paper adds “leave Firozabad” to the exchange in the textbook; it is preserved here because this is a narration exercise. The paper also says “car”; “cars” is the natural grammatical adjustment in indirect speech.'),
 ]
 # Textbook answers are separate editorial content; original passage excerpts remain in the question.
 Q8 = [
@@ -68,7 +68,7 @@ Q9 = [
  ('f','What is Firozabad famous for and why?','Firozabad is famous for its glass-bangle industry. Generations of families, including children in the account, work in its glass furnaces and bangle-making units, often under hazardous conditions.'),
 ]
 Q10I = [
- ('a','How long does the poet want to stay still?','For a brief moment—while counting to twelve.'),
+ ('a','How long does the poet want to stay still?','For one second, while counting to twelve.'),
  ('b','Why does he ask us to keep still and not use any language?','He wants people to pause their activity and divisions, experience a shared silence and reflect on themselves and their actions.'),
  ('c','What does the poet mean by “not move our arms so much”?','He asks us to stop restless and potentially harmful actions for a moment and remain still.'),
 ]
@@ -114,7 +114,7 @@ def build():
     content += '<section class="eng-section" id="section-10"><h2>Section D · Poetry extract</h2><p>Question 10 · 4 marks. Both alternatives are solved below. <a href="english-paper-2026.pdf#page=5">Read the extracts in the supplied paper, page 5</a>.</p><div class="eng-passage">(i) Extract from “Keeping Quiet” (see the supplied PDF for the poem).</div>'+''.join(card('10i',*row) for row in Q10I)+'<div class="eng-passage">Or (ii) Extract from “My Mother at Sixty-Six” (see the supplied PDF for the poem).</div>'+''.join(card('10ii',*row) for row in Q10II)+'</section>'
     content += section(11,'Section D · Poetry short answers','Question 11 · answer any two of four (4 marks).',Q11)
     content += section(12,'Section D · The Tiger King','Question 12 · answer any two of three (4 marks).',Q12)
-    content += '<section class="eng-section" id="paper-analysis"><h2>Paper analysis · what this exam actually assessed</h2><p>Marks by section: unseen comprehension 8; advanced writing 10; grammar 9; textbook 23. The paper sampled Lost Spring, Indigo and Memoirs in prose; Keeping Quiet, My Mother at Sixty-Six and A Roadside Stand in poetry; and The Tiger King in Vistas. Going Places and Memories of Childhood are in the supplied half-yearly syllabus but did not receive a printed question here. This observation is retrospective, not a prediction of future papers.</p><p>Q2 offered notice or classified advertisement; Q3 offered factual description or editor letter. Q4–Q7 tested verb forms, prepositions, voice and narration. Poster writing and sentence transformation were in the user-supplied scope, but not directly examined here. <a href="english-preparation.html">Practise every syllabus area →</a></p></section>'
+    content += '<section class="eng-section" id="paper-analysis"><h2>Paper analysis · what this exam actually assessed</h2><p>Marks by section: unseen comprehension 8; advanced writing 10; grammar 9; textbook 23. The paper sampled Lost Spring, Indigo and Memoirs in prose; Keeping Quiet, My Mother at Sixty-Six and A Roadside Stand in poetry; and The Tiger King in Vistas. Going Places and Memories of Childhood are in the supplied half-yearly syllabus but did not receive a printed question here. This observation is retrospective, not a prediction of future papers.</p><p>Q2 offered notice or classified advertisement; Q3 offered factual description or editor letter. Q4–Q7 tested verb forms, prepositions, voice and narration. Poster writing and sentence transformation were in the user-supplied scope, but not directly examined here. The paper’s Q7(b) adds wording absent from the textbook dialogue; grammar answers follow the paper as printed. <a href="english-preparation.html">Practise every syllabus area →</a></p></section>'
     content += '<a class="back" href="english.html">← Back to English resources</a>'
     (ROOT/'english-paper-2026.html').write_text(layout('English paper and suggested answers',content,'english'),encoding='utf8')
     print('generated English paper with',*[len(x) for x in (Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10I,Q10II,Q11,Q12)],'answers')
