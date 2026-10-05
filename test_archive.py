@@ -14,8 +14,8 @@ class Links(HTMLParser):
 class ArchiveTests(unittest.TestCase):
     def test_each_subject_has_own_page_and_correct_status(self):
         self.assertEqual(len(SUBJECTS),9)
-        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),6)
-        self.assertEqual(sum(s['phase']=='upcoming' for s in SUBJECTS),3)
+        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),7)
+        self.assertEqual(sum(s['phase']=='upcoming' for s in SUBJECTS),2)
         for s in SUBJECTS:
             with self.subTest(s=s['slug']):
                 page=(ROOT/(s['slug']+'.html')).read_text(encoding='utf8')
@@ -89,7 +89,7 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('750 V',page)
         self.assertIn('Do not treat this as an official mark scheme',page)
         self.assertIn('physics-paper-2026.html',(ROOT/'physics.html').read_text(encoding='utf8'))
-        self.assertIn('The Physics paper and worked review are now available',(ROOT/'index.html').read_text(encoding='utf8'))
+        self.assertIn('Physics and Computer Science papers and worked reviews are available',(ROOT/'index.html').read_text(encoding='utf8'))
 
     def test_every_physics_paper_page_has_existing_local_assets(self):
         import re
@@ -127,6 +127,9 @@ class ArchiveTests(unittest.TestCase):
 
     def test_paper_transcription_matches_source_pages_and_solutions(self):
         import pymupdf
+        source=Path('C:/Users/debas/AppData/Local/hermes/cache/documents/doc_e94b91d8d43a_2026_Class_12_Physics_English_Question_Paper_FIXED.pdf')
+        if not source.is_file():
+            self.skipTest('Original Physics upload no longer in Hermes cache; published PDF and page tested separately')
         from build_physics_paper import SOURCE, Q1, Q2, Q3, Q4
         doc=pymupdf.open(SOURCE)
         self.assertEqual(len(doc),8)
@@ -148,8 +151,8 @@ class ArchiveTests(unittest.TestCase):
 
     def test_caution_and_credit_on_every_html_page(self):
         from site_copy import CAUTION, CREDIT
-        pages=list(ROOT.glob('*.html'))+list((ROOT/'physics').glob('*.html'))+list((ROOT/'alte').glob('*.html'))
-        self.assertEqual(len(pages),35)
+        pages=list(ROOT.glob('*.html'))+list((ROOT/'physics').glob('*.html'))+list((ROOT/'alte').glob('*.html'))+list((ROOT/'computer-science').glob('*.html'))
+        self.assertEqual(len(pages),38)
         for page in pages:
             with self.subTest(page=str(page.relative_to(ROOT))):
                 text=page.read_text(encoding='utf8')
@@ -170,11 +173,11 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('Exam finished',page)
         self.assertIn('<h2>Working on it</h2>',page)
         self.assertNotIn('Exam status not confirmed',page)
-        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),6)
+        self.assertEqual(sum(s['phase']=='finished' for s in SUBJECTS),7)
 
     def test_all_mirrored_local_links_and_assets_exist(self):
         import re
-        for folder in ('physics','alte'):
+        for folder in ('physics','alte','computer-science'):
             for page in (ROOT/folder).glob('*.html'):
                 with self.subTest(page=page.name,folder=folder):
                     parser=Links(); parser.feed(page.read_text(encoding='utf8'))
@@ -191,5 +194,35 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn('physics-paper-2026.html',p)
         self.assertIn('alte/question-paper.html',(ROOT/'alternative-english.html').read_text(encoding='utf8'))
         self.assertTrue((ROOT/'alte/question-paper.html').is_file())
+
+    def test_computer_science_paper_and_both_guides(self):
+        from build_computer_science_paper import Q1,Q2,Q3,SOURCE
+        import pymupdf
+        paper=(ROOT/'computer-science-paper-2026.html').read_text(encoding='utf8')
+        subject=(ROOT/'computer-science.html').read_text(encoding='utf8')
+        self.assertEqual([len(Q1),len(Q2),len(Q3)],[4,8,8])
+        self.assertEqual(len(pymupdf.open(SOURCE)),3)
+        self.assertEqual(len(pymupdf.open(ROOT/'computer-science-paper-2026.pdf')),3)
+        for group,rows in enumerate((Q1,Q2,Q3),1):
+            for letter,question,_ in rows:
+                with self.subTest(question=f'{group}{letter}'):
+                    self.assertIn(f'id="q{group}{letter}"',paper)
+                    self.assertIn(question,paper)
+        self.assertEqual(paper.count('class="cs-answer"'),20)
+        self.assertIn('for (n = first; n &lt;= last; n++)',paper)
+        self.assertIn('Student s(12)',paper)
+        self.assertIn('an official marking scheme or a pre-exam prediction',subject)
+        for route in ('computer-science-paper-2026.html','computer-science-paper-2026.pdf',
+                      'computer-science/original.html','computer-science/index.html'):
+            self.assertIn('href="'+route+'"',subject)
+            self.assertTrue((ROOT/route).is_file())
+        for route in ('index.html','original.html'):
+            copy=(ROOT/'computer-science'/route).read_text(encoding='utf8')
+            source=(ROOT.parent/'Documents/computer-exam-study-site'/route).read_text(encoding='utf8')
+            self.assertIn(source.split('<body>',1)[1].split('</body>',1)[0],copy)
+        home=(ROOT/'index.html').read_text(encoding='utf8')
+        self.assertIn('<strong>7</strong> papers reported finished',home)
+        self.assertIn('<strong>2</strong> exams still ahead',home)
+        self.assertIn('<strong>4</strong> subjects with study materials',home)
 
 if __name__=='__main__': unittest.main()

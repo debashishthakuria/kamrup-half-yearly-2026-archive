@@ -23,7 +23,12 @@ SUBJECTS = [
     ]),
     dict(slug='chemistry', name='Chemistry', group='Elective', phase='finished', material='working'),
     dict(slug='biology', name='Biology', group='Elective', phase='upcoming', material='soon'),
-    dict(slug='computer-science', name='Computer Science', group='Elective', phase='upcoming', material='soon'),
+    dict(slug='computer-science', name='Computer Science', group='Elective', phase='finished', material='available', links=[
+        ('Read the 2026 question paper and suggested solutions', 'computer-science-paper-2026.html'),
+        ('Download the supplied OCR question paper', 'computer-science-paper-2026.pdf'),
+        ('Open the original computer exam preparation', 'computer-science/original.html'),
+        ('Open the expanded computer science study desk', 'computer-science/index.html'),
+    ]),
     dict(slug='general-studies', name='General Studies', group='Compulsory', phase='finished', material='available', links=[
         ('Open the full General Studies study book', BASE+'gshy/#overview'),
         ('Chapter 1 · Our Northeast, Our Neighbourhood', BASE+'gshy/#ch1'),
@@ -55,15 +60,16 @@ def card(s):
     if s['slug']=='physics': description='The supplied paper, worked answers and analysis are ready alongside the revision guide.'
     if s['slug']=='general-studies': description='Preparation notes are available. A post-exam analysis is not published here yet.'
     if s['slug']=='assamese': description='The Assamese MIL exam is finished. Preparation and post-exam review are still being prepared.'
+    if s['slug']=='computer-science': description='The supplied paper, suggested solutions and both versions of the study guide are available.'
     return '<a class="subject-card" href="'+s['slug']+'.html"><span class="overline">'+escape(s['group'])+'</span><h3>'+escape(s['name'])+' <span aria-hidden="true">↗</span></h3>'+status(s)+'<p>'+escape(description)+'</p></a>'
 
-home = '<section class="hero"><p class="eyebrow">A subject-by-subject record · 2026</p><h1>One place for the<br><em>half-yearly record.</em></h1><p class="lead">Preparation, papers and post-exam reviews for the Kamrup district HS second-year half-yearly exams. We’ll add each paper only when it is available.</p><div class="hero-stats"><span><strong>6</strong> papers reported finished</span><span><strong>3</strong> exams still ahead</span><span><strong>3</strong> subjects with study materials</span></div></section>'
+home = '<section class="hero"><p class="eyebrow">A subject-by-subject record · 2026</p><h1>One place for the<br><em>half-yearly record.</em></h1><p class="lead">Preparation, papers and post-exam reviews for the Kamrup district HS second-year half-yearly exams. We’ll add each paper only when it is available.</p><div class="hero-stats"><span><strong>7</strong> papers reported finished</span><span><strong>2</strong> exams still ahead</span><span><strong>4</strong> subjects with study materials</span></div></section>'
 home += '<section class="intro"><div><p class="eyebrow">Browse the archive</p><h2>Subjects, without the noise.</h2></div><p>Two statuses appear on each subject: whether the exam has happened, and whether materials are published. “Working on it” means the exam may be finished but the archive is not ready.</p></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">01 / 04</span><h2>Languages</h2><p>English and the two MIL options.</p></div><div class="card-grid">'+''.join(card(s) for s in SUBJECTS if s['group'] in ('Language','MIL'))+'</div></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">02 / 04</span><h2>Main electives</h2><p>Mathematics, Physics, Chemistry and Biology.</p></div><div class="card-grid">'+''.join(card(s) for s in SUBJECTS if s['group']=='Elective' and s['slug']!='computer-science')+'</div></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">03 / 04</span><h2>Additional elective</h2><p>Computer Science.</p></div><div class="card-grid">'+card(next(s for s in SUBJECTS if s['slug']=='computer-science'))+'</div></section>'
 home += '<section class="group"><div class="group-head"><span class="group-count">04 / 04</span><h2>Compulsory</h2><p>General Studies.</p></div><div class="card-grid">'+card(next(s for s in SUBJECTS if s['slug']=='general-studies'))+'</div></section>'
-home += '<aside class="note"><strong>What’s not here yet?</strong> The Physics paper and worked review are now available. Subjects marked “Working on it” do not have a new paper review here. This is a student study archive, not an official district results portal.</aside>'
+home += '<aside class="note"><strong>What’s not here yet?</strong> Physics and Computer Science papers and worked reviews are available. Subjects marked “Working on it” do not have a new paper review here. This is a student study archive, not an official district results portal.</aside>'
 (ROOT/'index.html').write_text(layout('Overview',home),encoding='utf8')
 
 for s in SUBJECTS:
@@ -72,6 +78,7 @@ for s in SUBJECTS:
     if s['material']=='available':
         content += '<section class="resource-block"><p class="eyebrow">Resources</p><h2>What’s available</h2><div class="resource-list">'+''.join('<a href="'+escape(url,quote=True)+'"'+(' target="_blank" rel="noopener noreferrer"' if url.startswith('https://') else '')+'><span>'+escape(label)+'</span><span aria-hidden="true">↗</span></a>' for label,url in s['links'])+'</div></section>'
         if s['slug']=='physics': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper and worked review available.</h2><p>The eight-page question paper, worked answers for every printed option, and a paper-level analysis are now included in this archive. The diagrams have been reconstructed from the supplied text for your review. This is not an official marking scheme.</p></section>'
+        elif s['slug']=='computer-science': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper and suggested solutions available.</h2><p>The supplied OCR paper and suggested answers for every printed question are here. The original pre-exam study page is preserved separately from the expanded post-exam study desk. Neither the answers nor the expanded guide are an official marking scheme or a pre-exam prediction.</p></section>'
         elif s['slug']=='general-studies': content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper and analysis pending.</h2><p>The General Studies paper has not been shared yet. When it arrives, the questions and post-exam review can be added here; the linked study book is preparation material, not a paper analysis.</p></section>'
         else: content += '<section class="empty-block"><p class="eyebrow">Post-exam record</p><h2>Paper review available.</h2><p>The Alternative English pages in this archive include the supplied paper, suggested answers and a guide audit. It is unofficial.</p></section>'
     else:

@@ -9,6 +9,7 @@ HOME = ROOT.parent
 SOURCES = {
     'physics': HOME / 'asseb-half-yearly-study-plan-2026',
     'alte': HOME / 'alte-harmony-revision',
+    'computer-science': HOME / 'Documents' / 'computer-exam-study-site',
 }
 
 
@@ -21,6 +22,8 @@ def mirror():
         if name == 'physics':
             files = [p for p in source.iterdir() if p.is_file() and (p.name.startswith('physics-') and p.suffix == '.html' or p.name in {'physics.html','physics-guide.css','katex-fonts.css','KATEX-LICENSE.txt'})]
             files += list((source / 'fonts').glob('*.woff2'))
+        elif name == 'computer-science':
+            files = [source / 'original.html', source / 'index.html']
         else:
             files = [p for p in source.iterdir() if p.is_file() and p.suffix in {'.html','.css','.js','.pdf'}]
         for file in files:
